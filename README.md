@@ -26,6 +26,18 @@ No empirical model-performance claims are made yet. The synthetic example only
 validates the evaluation pipeline and provides a controlled input for later
 calibration methods.
 
+## Day 2: fit temperature on held-out logits
+
+The second milestone adds scalar temperature scaling. A bounded optimisation
+fits one positive temperature by minimising negative log-likelihood on a
+calibration split; evaluation remains strictly held out. Because division by a
+positive scalar preserves logit ordering, the calibrated model changes its
+confidence without changing its predicted class.
+
+The comparison script reports raw and calibrated NLL, Brier score, ECE, and
+accuracy. Its deterministic synthetic output remains a pipeline check rather
+than evidence about a trained model.
+
 ## Quick start
 
 ```bash
@@ -33,6 +45,7 @@ python -m venv .venv
 source .venv/bin/activate
 python -m pip install -e ".[dev]"
 python scripts/evaluate_synthetic.py
+python scripts/evaluate_temperature_scaling.py
 pytest
 ```
 
