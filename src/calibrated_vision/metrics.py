@@ -2,8 +2,27 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
+
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
+
+
+@dataclass(frozen=True)
+class CalibrationBins:
+    """Sufficient statistics for an equal-width reliability diagram."""
+
+    edges: NDArray[np.float64]
+    counts: NDArray[np.int64]
+    accuracy: NDArray[np.float64]
+    mean_confidence: NDArray[np.float64]
+
+    @property
+    def expected_calibration_error(self) -> float:
+        """Return sample-weighted absolute accuracy-confidence gaps."""
+        total = int(self.counts.sum())
+        gaps = np.nan_to_num(np.abs(self.accuracy - self.mean_confidence))
+        return float(np.dot(self.counts / total, gaps))
 
 
 def _validate_logits_and_labels(
@@ -64,6 +83,17 @@ def expected_calibration_error(
     Confidence exactly equal to zero belongs to the first bin; confidence equal
     to one belongs to the final bin. Empty bins contribute zero.
     """
+    return calibration_bins(logits, labels, n_bins=n_bins).expected_calibration_error
+
+
+def calibration_bins(
+    logits: ArrayLike, labels: ArrayLike, *, n_bins: int = 15
+) -> CalibrationBins:
+    """Aggregate top-label accuracy and confidence in equal-width bins.
+
+    Empty bins retain ``NaN`` accuracy and confidence so that plots do not
+    imply measurements where no observations exist.
+    """
     if not isinstance(n_bins, int) or isinstance(n_bins, bool) or n_bins < 1:
         raise ValueError("n_bins must be a positive integer")
 
@@ -73,16 +103,20 @@ def expected_calibration_error(
     confidence = probabilities.max(axis=1)
     correct = predictions == targets
 
-    # digitize against interior edges gives stable handling at both endpoints.
-    bin_edges = np.linspace(0.0, 1.0, n_bins + 1)
-    bin_ids = np.digitize(confidence, bin_edges[1:-1], right=True)
+    edges = np.linspace(0.0, 1.0, n_bins + 1)
+    bin_ids = np.digitize(confidence, edges[1:-1], right=True)
+    counts = np.bincount(bin_ids, minlength=n_bins).astype(np.int64)
+    accuracy = np.full(n_bins, np.nan, dtype=np.float64)
+    mean_confidence = np.full(n_bins, np.nan, dtype=np.float64)
 
-    ece = 0.0
-    for bin_id in range(n_bins):
+    for bin_id in np.flatnonzero(counts):
         members = bin_ids == bin_id
-        if np.any(members):
-            weight = float(members.mean())
-            accuracy = float(correct[members].mean())
-            mean_confidence = float(confidence[members].mean())
-            ece += weight * abs(accuracy - mean_confidence)
-    return ece
+        accuracy[bin_id] = float(correct[members].mean())
+        mean_confidence[bin_id] = float(confidence[members].mean())
+
+    return CalibrationBins(
+        edges=edges,
+        counts=counts,
+        accuracy=accuracy,
+        mean_confidence=mean_confidence,
+    )

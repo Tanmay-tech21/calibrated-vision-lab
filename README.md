@@ -38,6 +38,17 @@ The comparison script reports raw and calibrated NLL, Brier score, ECE, and
 accuracy. Its deterministic synthetic output remains a pipeline check rather
 than evidence about a trained model.
 
+## Day 3: inspect reliability and estimator sensitivity
+
+The third milestone exposes the bin statistics behind ECE and adds reliability
+diagrams that keep empty bins visibly unmeasured. A repeated-seed study reports
+mean and sample standard deviation for NLL, Brier score, and ECE at 10, 15, 30,
+and 50 bins. This makes an important limitation explicit: histogram-based ECE
+is an estimator whose value can change with the binning scheme and sample.
+
+The sensitivity study uses deterministic synthetic data to validate the
+pipeline. Its numbers are not claims about a trained vision model.
+
 ## Quick start
 
 ```bash
@@ -46,17 +57,19 @@ source .venv/bin/activate
 python -m pip install -e ".[dev]"
 python scripts/evaluate_synthetic.py
 python scripts/evaluate_temperature_scaling.py
+python scripts/analyze_reliability.py
 pytest
 ```
 
-The evaluation script prints a JSON object so that future experiment runners
-can capture the output without parsing human-oriented logs.
+The scripts print JSON so that future experiment runners can capture output
+without parsing human-oriented logs. The reliability analysis also writes a
+representative two-panel diagram to `artifacts/reliability_diagram.png`.
 
 ## Planned progression
 
 1. Calibration metrics and reproducible synthetic baseline
 2. Temperature scaling on held-out logits
-3. Reliability diagrams and bin-sensitivity analysis
+3. Reliability diagrams and bin-sensitivity analysis (complete)
 4. Calibration under class imbalance
 5. Selective prediction and risk-coverage curves
 6. Distribution-shift stress test
