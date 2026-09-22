@@ -32,3 +32,26 @@ def make_synthetic_logits(
         scale=0.35, size=latent_scores.shape
     )
     return overconfident_logits, labels.astype(np.int64)
+
+
+def make_imbalanced_synthetic_logits(
+    *, n_samples: int = 5_000, seed: int = 23
+) -> tuple[NDArray[np.float64], NDArray[np.int64]]:
+    """Generate a five-class fixture with heterogeneous support and difficulty.
+
+    This deliberately simplified sample exists to exercise imbalance-aware
+    diagnostics. It is not evidence about a trained classifier.
+    """
+    if n_samples < 100:
+        raise ValueError("n_samples must be at least 100")
+
+    rng = np.random.default_rng(seed)
+    class_prior = np.array([0.70, 0.18, 0.08, 0.03, 0.01])
+    labels = rng.choice(class_prior.size, size=n_samples, p=class_prior)
+    logits = rng.normal(scale=0.9, size=(n_samples, class_prior.size))
+
+    # Scarcer classes receive weaker signal to mimic a long-tail failure mode.
+    signal = np.array([3.4, 2.8, 2.2, 1.6, 1.0])
+    logits[np.arange(n_samples), labels] += signal[labels]
+    logits += np.log(class_prior + 0.03)
+    return logits, labels.astype(np.int64)

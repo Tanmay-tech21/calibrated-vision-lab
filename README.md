@@ -49,6 +49,17 @@ is an estimator whose value can change with the binning scheme and sample.
 The sensitivity study uses deterministic synthetic data to validate the
 pipeline. Its numbers are not claims about a trained vision model.
 
+## Day 4: audit calibration under class imbalance
+
+The fourth milestone partitions top-label calibration by true class and reports
+both macro and support-weighted group ECE. It also extends temperature scaling
+with optional observation weights, enabling a controlled comparison between a
+prevalence-weighted objective and inverse-frequency class balancing.
+
+Group-conditioned ECE is treated as a disparity diagnostic rather than a
+replacement for population calibration. The imbalanced synthetic fixture is a
+pipeline validation, not a trained-model benchmark.
+
 ## Quick start
 
 ```bash
@@ -58,6 +69,7 @@ python -m pip install -e ".[dev]"
 python scripts/evaluate_synthetic.py
 python scripts/evaluate_temperature_scaling.py
 python scripts/analyze_reliability.py
+python scripts/evaluate_class_imbalance.py
 pytest
 ```
 
@@ -70,7 +82,7 @@ representative two-panel diagram to `artifacts/reliability_diagram.png`.
 1. Calibration metrics and reproducible synthetic baseline
 2. Temperature scaling on held-out logits
 3. Reliability diagrams and bin-sensitivity analysis (complete)
-4. Calibration under class imbalance
+4. Calibration under class imbalance (complete)
 5. Selective prediction and risk-coverage curves
 6. Distribution-shift stress test
 7. Reproducible report and experiment card
@@ -82,6 +94,8 @@ representative two-panel diagram to `artifacts/reliability_diagram.png`.
 - Brier score is the sum of squared class-probability errors, averaged over
   examples.
 - ECE uses equal-width confidence bins and top-label correctness.
+- Groupwise ECE conditions the same top-label statistic on each true class;
+  macro and support-weighted summaries are reported together.
 
 These choices are explicit because calibration numbers are only comparable
 when their definitions match.

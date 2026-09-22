@@ -41,8 +41,14 @@ class TemperatureScaler:
         if not np.isfinite(self.temperature) or self.temperature <= 0.0:
             raise ValueError("temperature must be finite and positive")
 
-    def fit(self, logits: ArrayLike, labels: ArrayLike) -> "TemperatureScaler":
-        """Fit on a calibration split and return this scaler."""
+    def fit(
+        self,
+        logits: ArrayLike,
+        labels: ArrayLike,
+        *,
+        sample_weight: ArrayLike | None = None,
+    ) -> "TemperatureScaler":
+        """Fit on a calibration split, optionally using observation weights."""
         scores = _as_logits(logits)
         targets = np.asarray(labels)
 
@@ -52,7 +58,9 @@ class TemperatureScaler:
         right = lower + (upper - lower) / golden_ratio
 
         def objective(log_temperature: float) -> float:
-            return negative_log_likelihood(scores / np.exp(log_temperature), targets)
+            return negative_log_likelihood(
+                scores / np.exp(log_temperature), targets, sample_weight=sample_weight
+            )
 
         left_value = objective(left)
         right_value = objective(right)
@@ -73,6 +81,12 @@ class TemperatureScaler:
         """Apply the fitted temperature while preserving class ordering."""
         return _as_logits(logits) / self.temperature
 
-    def fit_transform(self, logits: ArrayLike, labels: ArrayLike) -> NDArray[np.float64]:
+    def fit_transform(
+        self,
+        logits: ArrayLike,
+        labels: ArrayLike,
+        *,
+        sample_weight: ArrayLike | None = None,
+    ) -> NDArray[np.float64]:
         """Fit and transform the calibration logits."""
-        return self.fit(logits, labels).transform(logits)
+        return self.fit(logits, labels, sample_weight=sample_weight).transform(logits)

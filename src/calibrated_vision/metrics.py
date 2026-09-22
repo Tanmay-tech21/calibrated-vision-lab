@@ -25,6 +25,27 @@ class CalibrationBins:
         return float(np.dot(self.counts / total, gaps))
 
 
+@dataclass(frozen=True)
+class GroupwiseCalibration:
+    """Top-label calibration diagnostics partitioned by true class."""
+
+    support: NDArray[np.int64]
+    accuracy: NDArray[np.float64]
+    mean_confidence: NDArray[np.float64]
+    expected_calibration_error: NDArray[np.float64]
+
+    @property
+    def macro_ece(self) -> float:
+        """Average ECE across represented classes, irrespective of support."""
+        return float(np.nanmean(self.expected_calibration_error))
+
+    @property
+    def support_weighted_ece(self) -> float:
+        """Average ECE weighted by empirical class prevalence."""
+        weights = self.support / self.support.sum()
+        return float(np.dot(weights, np.nan_to_num(self.expected_calibration_error)))
+
+
 def _validate_logits_and_labels(
     logits: ArrayLike, labels: ArrayLike
 ) -> tuple[NDArray[np.float64], NDArray[np.int64]]:
@@ -59,12 +80,23 @@ def softmax(logits: ArrayLike) -> NDArray[np.float64]:
     return exponentials / exponentials.sum(axis=1, keepdims=True)
 
 
-def negative_log_likelihood(logits: ArrayLike, labels: ArrayLike) -> float:
+def negative_log_likelihood(
+    logits: ArrayLike, labels: ArrayLike, *, sample_weight: ArrayLike | None = None
+) -> float:
     """Return mean multiclass negative log-likelihood from unnormalised logits."""
     scores, targets = _validate_logits_and_labels(logits, labels)
     probabilities = softmax(scores)
     true_class_probability = probabilities[np.arange(targets.size), targets]
-    return float(-np.log(np.clip(true_class_probability, 1e-15, 1.0)).mean())
+    losses = -np.log(np.clip(true_class_probability, 1e-15, 1.0))
+    if sample_weight is None:
+        return float(losses.mean())
+
+    weights = np.asarray(sample_weight, dtype=np.float64)
+    if weights.shape != (targets.size,):
+        raise ValueError("sample_weight must have shape (n_samples,)")
+    if not np.all(np.isfinite(weights)) or np.any(weights < 0.0) or weights.sum() <= 0.0:
+        raise ValueError("sample_weight must be finite, non-negative, and have positive sum")
+    return float(np.average(losses, weights=weights))
 
 
 def brier_score(logits: ArrayLike, labels: ArrayLike) -> float:
@@ -119,4 +151,39 @@ def calibration_bins(
         counts=counts,
         accuracy=accuracy,
         mean_confidence=mean_confidence,
+    )
+
+
+def groupwise_calibration(
+    logits: ArrayLike, labels: ArrayLike, *, n_bins: int = 15
+) -> GroupwiseCalibration:
+    """Report top-label calibration separately for each represented true class.
+
+    Conditioning on the true class is a diagnostic for disparities, not a
+    replacement for population-level calibration. Unrepresented classes are
+    returned as ``NaN`` and excluded from the macro average.
+    """
+    scores, targets = _validate_logits_and_labels(logits, labels)
+    n_classes = scores.shape[1]
+    support = np.bincount(targets, minlength=n_classes).astype(np.int64)
+    accuracy = np.full(n_classes, np.nan, dtype=np.float64)
+    mean_confidence = np.full(n_classes, np.nan, dtype=np.float64)
+    ece = np.full(n_classes, np.nan, dtype=np.float64)
+
+    probabilities = softmax(scores)
+    predictions = probabilities.argmax(axis=1)
+    confidence = probabilities.max(axis=1)
+    for class_id in np.flatnonzero(support):
+        members = targets == class_id
+        accuracy[class_id] = float((predictions[members] == targets[members]).mean())
+        mean_confidence[class_id] = float(confidence[members].mean())
+        ece[class_id] = calibration_bins(
+            scores[members], targets[members], n_bins=n_bins
+        ).expected_calibration_error
+
+    return GroupwiseCalibration(
+        support=support,
+        accuracy=accuracy,
+        mean_confidence=mean_confidence,
+        expected_calibration_error=ece,
     )
