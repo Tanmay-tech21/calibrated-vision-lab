@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 from numpy.typing import ArrayLike
 
 from .metrics import calibration_bins
+from .selective import RiskCoverageCurve
 
 if TYPE_CHECKING:
     from matplotlib.axes import Axes
@@ -52,4 +53,23 @@ def plot_reliability_diagram(
     ax.set_title(title or f"Reliability diagram (ECE={statistics.expected_calibration_error:.3f})")
     ax.grid(alpha=0.2)
     ax.legend(loc="upper left")
+    return ax
+
+
+def plot_risk_coverage_curve(
+    curve: RiskCoverageCurve,
+    *,
+    ax: Axes | None = None,
+    label: str | None = None,
+) -> Axes:
+    """Plot empirical selective risk against retained-data coverage."""
+    import matplotlib.pyplot as plt
+
+    if ax is None:
+        _, ax = plt.subplots(figsize=(5.5, 4.5))
+    ax.plot(curve.coverage, curve.risk, linewidth=2.0, label=label)
+    ax.set(xlim=(0.0, 1.0), xlabel="Coverage", ylabel="Selective risk")
+    ax.grid(alpha=0.2)
+    if label is not None:
+        ax.legend()
     return ax

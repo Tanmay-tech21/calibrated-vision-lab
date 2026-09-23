@@ -60,6 +60,17 @@ Group-conditioned ECE is treated as a disparity diagnostic rather than a
 replacement for population calibration. The imbalanced synthetic fixture is a
 pipeline validation, not a trained-model benchmark.
 
+## Day 5: quantify abstention with risk-coverage curves
+
+The fifth milestone ranks predictions using maximum probability or normalised
+negative entropy, then measures the error rate as progressively less-confident
+examples are accepted. It reports risk at operational coverage targets and the
+discrete area under the risk-coverage curve (AURC).
+
+Tied confidence scores retain input order for deterministic analysis. A deployed
+threshold may accept all tied observations, so realised coverage must still be
+reported alongside its target.
+
 ## Quick start
 
 ```bash
@@ -70,6 +81,7 @@ python scripts/evaluate_synthetic.py
 python scripts/evaluate_temperature_scaling.py
 python scripts/analyze_reliability.py
 python scripts/evaluate_class_imbalance.py
+python scripts/evaluate_selective_prediction.py
 pytest
 ```
 
@@ -83,7 +95,7 @@ representative two-panel diagram to `artifacts/reliability_diagram.png`.
 2. Temperature scaling on held-out logits
 3. Reliability diagrams and bin-sensitivity analysis (complete)
 4. Calibration under class imbalance (complete)
-5. Selective prediction and risk-coverage curves
+5. Selective prediction and risk-coverage curves (complete)
 6. Distribution-shift stress test
 7. Reproducible report and experiment card
 
@@ -96,6 +108,8 @@ representative two-panel diagram to `artifacts/reliability_diagram.png`.
 - ECE uses equal-width confidence bins and top-label correctness.
 - Groupwise ECE conditions the same top-label statistic on each true class;
   macro and support-weighted summaries are reported together.
+- Selective risk is the error rate among retained predictions; coverage is the
+  retained fraction, and AURC is the mean cumulative risk over ranked samples.
 
 These choices are explicit because calibration numbers are only comparable
 when their definitions match.

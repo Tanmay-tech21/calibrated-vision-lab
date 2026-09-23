@@ -11,17 +11,22 @@ from .metrics import (
     negative_log_likelihood,
     softmax,
 )
-from .visualization import plot_reliability_diagram
+from .selective import RiskCoverageCurve, confidence_scores, risk_coverage_curve
+from .visualization import plot_reliability_diagram, plot_risk_coverage_curve
 
 __all__ = [
     "TemperatureScaler",
     "CalibrationBins",
     "GroupwiseCalibration",
+    "RiskCoverageCurve",
     "brier_score",
     "calibration_bins",
+    "confidence_scores",
     "expected_calibration_error",
     "groupwise_calibration",
     "negative_log_likelihood",
     "plot_reliability_diagram",
+    "plot_risk_coverage_curve",
+    "risk_coverage_curve",
     "softmax",
 ]
