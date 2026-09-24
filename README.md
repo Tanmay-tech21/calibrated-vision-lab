@@ -71,6 +71,19 @@ Tied confidence scores retain input order for deterministic analysis. A deployed
 threshold may accept all tied observations, so realised coverage must still be
 reported alongside its target.
 
+## Day 6: stress-test clean-data calibration under shift
+
+The sixth milestone introduces controlled logit-space stressors for confidence
+softening, stochastic noise, and systematic class bias. A temperature fitted
+only on clean calibration data is then evaluated across increasing severities
+using accuracy, NLL, Brier score, ECE, AURC, and selective risk.
+
+These transformations isolate different failure mechanisms, but they are not
+claimed to reproduce natural image corruptions. Their purpose is to test the
+measurement pipeline before running the same protocol on genuine shifted image
+data. Severity is defined within each stressor and must not be compared across
+stressor families as though it shared a physical unit.
+
 ## Quick start
 
 ```bash
@@ -82,6 +95,7 @@ python scripts/evaluate_temperature_scaling.py
 python scripts/analyze_reliability.py
 python scripts/evaluate_class_imbalance.py
 python scripts/evaluate_selective_prediction.py
+python scripts/evaluate_distribution_shift.py
 pytest
 ```
 
@@ -96,7 +110,7 @@ representative two-panel diagram to `artifacts/reliability_diagram.png`.
 3. Reliability diagrams and bin-sensitivity analysis (complete)
 4. Calibration under class imbalance (complete)
 5. Selective prediction and risk-coverage curves (complete)
-6. Distribution-shift stress test
+6. Distribution-shift stress test (complete)
 7. Reproducible report and experiment card
 
 ## Metric conventions

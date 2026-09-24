@@ -12,6 +12,7 @@ from .metrics import (
     softmax,
 )
 from .selective import RiskCoverageCurve, confidence_scores, risk_coverage_curve
+from .shifts import ShiftKind, apply_logit_shift
 from .visualization import plot_reliability_diagram, plot_risk_coverage_curve
 
 __all__ = [
@@ -19,6 +20,8 @@ __all__ = [
     "CalibrationBins",
     "GroupwiseCalibration",
     "RiskCoverageCurve",
+    "ShiftKind",
+    "apply_logit_shift",
     "brier_score",
     "calibration_bins",
     "confidence_scores",
