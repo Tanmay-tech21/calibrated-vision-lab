@@ -84,6 +84,16 @@ measurement pipeline before running the same protocol on genuine shifted image
 data. Severity is defined within each stressor and must not be compared across
 stressor families as though it shared a physical unit.
 
+## Day 7: publish a reproducible experiment card
+
+The final milestone consolidates classification, calibration, and selective-
+prediction measurements behind one reusable evaluator. A deterministic report
+builder records seeds, split sizes, metric conventions, clean and shifted
+results, claim boundaries, and the next validation required for real images.
+
+Both Markdown and JSON outputs are generated from the same result snapshot, so
+the portfolio narrative cannot silently drift away from the measured values.
+
 ## Quick start
 
 ```bash
@@ -96,6 +106,7 @@ python scripts/analyze_reliability.py
 python scripts/evaluate_class_imbalance.py
 python scripts/evaluate_selective_prediction.py
 python scripts/evaluate_distribution_shift.py
+python scripts/build_experiment_card.py
 pytest
 ```
 
@@ -111,7 +122,7 @@ representative two-panel diagram to `artifacts/reliability_diagram.png`.
 4. Calibration under class imbalance (complete)
 5. Selective prediction and risk-coverage curves (complete)
 6. Distribution-shift stress test (complete)
-7. Reproducible report and experiment card
+7. Reproducible report and experiment card (complete)
 
 ## Metric conventions
 

@@ -1,0 +1,103 @@
+{
+  "clean": {
+    "calibrated": {
+      "accuracy": 0.7825,
+      "aurc": 0.17005282923380355,
+      "brier": 0.4197633760597329,
+      "ece": 0.1764231818715971,
+      "nll": 0.9296881354866561,
+      "risk_at_50_percent_coverage": 0.161,
+      "risk_at_90_percent_coverage": 0.19611111111111112
+    },
+    "raw": {
+      "accuracy": 0.7825,
+      "aurc": 0.16855937045075525,
+      "brier": 0.39670383596000736,
+      "ece": 0.14396981724763197,
+      "nll": 0.9492005208025505,
+      "risk_at_50_percent_coverage": 0.161,
+      "risk_at_90_percent_coverage": 0.195
+    }
+  },
+  "limitations": [
+    "The logits and labels are synthetic software fixtures, not model benchmarks.",
+    "Logit stressors isolate failure modes but do not reproduce image corruptions.",
+    "ECE is bin-dependent and must be interpreted with proper scoring rules.",
+    "No deployment threshold is validated on real coin images."
+  ],
+  "protocol": {
+    "calibration_samples": 1000,
+    "ece_bins": 15,
+    "evaluation_samples": 2000,
+    "fixture_seed": 61,
+    "shift_seed": 113,
+    "temperature_fitted_on": "clean calibration split only"
+  },
+  "shifted": {
+    "class_bias": {
+      "clean_fitted_temperature": {
+        "accuracy": 0.671,
+        "aurc": 0.22141831861760403,
+        "brier": 0.4750507488970467,
+        "ece": 0.05441247877506448,
+        "nll": 1.0055083976772579,
+        "risk_at_50_percent_coverage": 0.207,
+        "risk_at_90_percent_coverage": 0.30944444444444447
+      },
+      "raw": {
+        "accuracy": 0.671,
+        "aurc": 0.21935847110373372,
+        "brier": 0.47214928721390026,
+        "ece": 0.06217904696991551,
+        "nll": 1.0551950446098068,
+        "risk_at_50_percent_coverage": 0.196,
+        "risk_at_90_percent_coverage": 0.30722222222222223
+      },
+      "severity": 1.5
+    },
+    "confidence_softening": {
+      "clean_fitted_temperature": {
+        "accuracy": 0.7825,
+        "aurc": 0.17591995416301848,
+        "brier": 0.560825289524975,
+        "ece": 0.38058958294701806,
+        "nll": 1.1139992852789677,
+        "risk_at_50_percent_coverage": 0.165,
+        "risk_at_90_percent_coverage": 0.20166666666666666
+      },
+      "raw": {
+        "accuracy": 0.7825,
+        "aurc": 0.17474182442478228,
+        "brier": 0.5183803185865485,
+        "ece": 0.32770250728162015,
+        "nll": 1.0429124553867033,
+        "risk_at_50_percent_coverage": 0.166,
+        "risk_at_90_percent_coverage": 0.20055555555555554
+      },
+      "severity": 1.5
+    },
+    "gaussian_noise": {
+      "clean_fitted_temperature": {
+        "accuracy": 0.5775,
+        "aurc": 0.29225647204351185,
+        "brier": 0.5821908131179827,
+        "ece": 0.1008908610172215,
+        "nll": 1.2328548387896305,
+        "risk_at_50_percent_coverage": 0.285,
+        "risk_at_90_percent_coverage": 0.39944444444444444
+      },
+      "raw": {
+        "accuracy": 0.5775,
+        "aurc": 0.29184336050511,
+        "brier": 0.6033361817137892,
+        "ece": 0.1589724019576829,
+        "nll": 1.3636427695518583,
+        "risk_at_50_percent_coverage": 0.287,
+        "risk_at_90_percent_coverage": 0.39944444444444444
+      },
+      "severity": 1.5
+    }
+  },
+  "status": "synthetic pipeline validation",
+  "temperature": 1.276476812065265
+}

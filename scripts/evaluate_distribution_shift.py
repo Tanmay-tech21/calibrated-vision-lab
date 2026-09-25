@@ -4,34 +4,16 @@ from __future__ import annotations
 
 import json
 
-import numpy as np
-
 from calibrated_vision import (
     TemperatureScaler,
     apply_logit_shift,
-    brier_score,
-    expected_calibration_error,
-    negative_log_likelihood,
-    risk_coverage_curve,
+    evaluate_predictions,
 )
 from calibrated_vision.synthetic import make_synthetic_logits
 
 
 STRESSORS = ("confidence_softening", "gaussian_noise", "class_bias")
 SEVERITIES = (0.0, 0.5, 1.0, 1.5)
-
-
-def _metrics(logits: np.ndarray, labels: np.ndarray) -> dict[str, float]:
-    curve = risk_coverage_curve(logits, labels)
-    return {
-        "accuracy": float((logits.argmax(axis=1) == labels).mean()),
-        "nll": negative_log_likelihood(logits, labels),
-        "brier": brier_score(logits, labels),
-        "ece": expected_calibration_error(logits, labels),
-        "aurc": curve.aurc,
-        "risk_at_50_percent_coverage": curve.risk_at_coverage(0.50),
-        "risk_at_90_percent_coverage": curve.risk_at_coverage(0.90),
-    }
 
 
 def main() -> None:
@@ -54,10 +36,10 @@ def main() -> None:
             measurements.append(
                 {
                     "severity": severity,
-                    "raw": _metrics(shifted, evaluation_labels),
-                    "clean_fitted_temperature": _metrics(
+                    "raw": evaluate_predictions(shifted, evaluation_labels).as_dict(),
+                    "clean_fitted_temperature": evaluate_predictions(
                         scaler.transform(shifted), evaluation_labels
-                    ),
+                    ).as_dict(),
                 }
             )
         results[stressor] = measurements
